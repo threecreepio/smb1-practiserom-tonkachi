@@ -1,15 +1,15 @@
-SMB1 Practise ROM Builder
-==========================
+Tonkachi Mario Practise ROM
+===========================
 
-Inspired by Pellsson! https://github.com/pellsson/smb
+This patch adds a stage select, power-up and framerule selection to Tonkachi Mario.
 
-This patch adds a stage select, power-up and framerule selection to SMB1 Romhacks (or the original game if so desired.)
+Usage
+-----
 
-For now this only really works well on fairly basic romhacks that don't alter too much of the game code.
+The easiest way to apply this patch is to go to https://www.romhacking.net/patch/
 
-How to apply a patch
-====================
+Place the Super Mario Bros 1 rom in the "rom file", and the IPS from this archive into the "patch file" and press apply patch!
 
-The easiest way to patch a romhack is to visit https://3.creep.io/smb1/practiserom, drop your romhack rom into the file select.
+You can of course use Lunar IPS or FLIPS if you'd prefer.
 
-If it applies cleanly you can download the resulting file from the page!
+/threecreepio

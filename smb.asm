@@ -3744,13 +3744,13 @@ AreaDataOfsLoopback:
 LoadAreaPointer:
              jsr FindAreaPointer  ;find it and store it here
              sta AreaPointer
-GetAreaType: and #%01100000       ;mask out all but d6 and d5
+GetAreaType: and #%11000000       ;mask out all but d6 and d5
              asl
-             rol
              rol
              rol                  ;make %0xx00000 into %000000xx
              sta AreaType         ;save 2 MSB as area type
              rts
+             nop
 
 .export FindAreaPointer
 FindAreaPointer:
@@ -3768,21 +3768,12 @@ GetAreaDataAddrs:
             jsr GetAreaType
             tay
             lda AreaPointer          ;mask out all but 5 LSB
-            and #%00011111
-            sta AreaAddrsLOffset     ;save as low offset
-            lda EnemyAddrHOffsets,y  ;load base value with 2 altered MSB,
-            clc                      ;then add base value to 5 LSB, result
-            adc AreaAddrsLOffset     ;becomes offset for level data
+            and #%00111111
             tay
             lda EnemyDataAddrLow,y   ;use offset to load pointer
             sta EnemyDataLow
             lda EnemyDataAddrHigh,y
             sta EnemyDataHigh
-            ldy AreaType             ;use area type as offset
-            lda AreaDataHOffsets,y   ;do the same thing but with different base value
-            clc
-            adc AreaAddrsLOffset        
-            tay
             lda AreaDataAddrLow,y    ;use this offset to load another pointer
             sta AreaDataLow
             lda AreaDataAddrHigh,y
@@ -3845,6 +3836,7 @@ StoreStyle: sta AreaStyle
 
 ;-------------------------------------------------------------------------------------
 ;GAME LEVELS DATA
+.res $9CB4 - *, $00
 .export WorldAddrOffsets
 WorldAddrOffsets:
       .byte World1Areas-AreaAddrOffsets, World2Areas-AreaAddrOffsets
@@ -3853,14 +3845,18 @@ WorldAddrOffsets:
       .byte World7Areas-AreaAddrOffsets, World8Areas-AreaAddrOffsets
 
 AreaAddrOffsets:
-World1Areas: .byte $25, $29, $c0, $26, $60
-World2Areas: .byte $28, $29, $01, $27, $62
-World3Areas: .byte $24, $35, $20, $63
-World4Areas: .byte $22, $29, $41, $2c, $61
-World5Areas: .byte $2a, $31, $26, $62
-World6Areas: .byte $2e, $23, $2d, $60
-World7Areas: .byte $33, $29, $01, $27, $64
-World8Areas: .byte $30, $32, $21, $65
+World1Areas: .byte $40, $81, $82, $43, $C4, $C5
+World2Areas: .byte $46, $01, $07, $08, $C9
+World3Areas: .byte $4A, $4B, $8C, $CD
+World4Areas: .byte $4E, $CF, $50, $E6
+World5Areas: .byte $51, $52, $53, $D4, $C5
+World6Areas: .byte $55, $96, $97, $D8
+World7Areas: .byte $71, $72, $B3, $F4
+World8Areas: .byte $59, $1A, $41, $9C, $ED, $06, $1C
+
+
+
+
 
 ;bonus area data offsets, included here for comparison purposes
 ;underground bonus area  - c2
@@ -3870,812 +3866,357 @@ World8Areas: .byte $30, $32, $21, $65
 ;water area (8-4)        - 02
 ;warp zone area (4-2)    - 2f
 
-EnemyAddrHOffsets:
-      .byte $1f, $06, $1c, $00
-
-EnemyDataAddrLow:
-      .byte <E_CastleArea1, <E_CastleArea2, <E_CastleArea3, <E_CastleArea4, <E_CastleArea5, <E_CastleArea6
-      .byte <E_GroundArea1, <E_GroundArea2, <E_GroundArea3, <E_GroundArea4, <E_GroundArea5, <E_GroundArea6
-      .byte <E_GroundArea7, <E_GroundArea8, <E_GroundArea9, <E_GroundArea10, <E_GroundArea11, <E_GroundArea12
-      .byte <E_GroundArea13, <E_GroundArea14, <E_GroundArea15, <E_GroundArea16, <E_GroundArea17, <E_GroundArea18
-      .byte <E_GroundArea19, <E_GroundArea20, <E_GroundArea21, <E_GroundArea22, <E_UndergroundArea1
-      .byte <E_UndergroundArea2, <E_UndergroundArea3, <E_WaterArea1, <E_WaterArea2, <E_WaterArea3
-
-EnemyDataAddrHigh:
-      .byte >E_CastleArea1, >E_CastleArea2, >E_CastleArea3, >E_CastleArea4, >E_CastleArea5, >E_CastleArea6
-      .byte >E_GroundArea1, >E_GroundArea2, >E_GroundArea3, >E_GroundArea4, >E_GroundArea5, >E_GroundArea6
-      .byte >E_GroundArea7, >E_GroundArea8, >E_GroundArea9, >E_GroundArea10, >E_GroundArea11, >E_GroundArea12
-      .byte >E_GroundArea13, >E_GroundArea14, >E_GroundArea15, >E_GroundArea16, >E_GroundArea17, >E_GroundArea18
-      .byte >E_GroundArea19, >E_GroundArea20, >E_GroundArea21, >E_GroundArea22, >E_UndergroundArea1
-      .byte >E_UndergroundArea2, >E_UndergroundArea3, >E_WaterArea1, >E_WaterArea2, >E_WaterArea3
-
-AreaDataHOffsets:
-      .byte $00, $03, $19, $1c
 
 AreaDataAddrLow:
-      .byte <L_WaterArea1, <L_WaterArea2, <L_WaterArea3, <L_GroundArea1, <L_GroundArea2, <L_GroundArea3
-      .byte <L_GroundArea4, <L_GroundArea5, <L_GroundArea6, <L_GroundArea7, <L_GroundArea8, <L_GroundArea9
-      .byte <L_GroundArea10, <L_GroundArea11, <L_GroundArea12, <L_GroundArea13, <L_GroundArea14, <L_GroundArea15
-      .byte <L_GroundArea16, <L_GroundArea17, <L_GroundArea18, <L_GroundArea19, <L_GroundArea20, <L_GroundArea21
-      .byte <L_GroundArea22, <L_UndergroundArea1, <L_UndergroundArea2, <L_UndergroundArea3, <L_CastleArea1
-      .byte <L_CastleArea2, <L_CastleArea3, <L_CastleArea4, <L_CastleArea5, <L_CastleArea6
+.byte <L_7E00,<L_7E37,<L_7E41,<L_7EB8,<L_7EF8,<L_7F3A,<L_7F66,<L_7FBF,<L_7FE7,<L_8025,<L_80CD,<L_8102,<L_814F,<L_816D,<L_81A0,<L_81F6,<L_8249,<L_8369,<L_838B,<L_838B,<L_8429,<L_848A,<L_84B6,<L_84D8,<L_84EB,<L_8683,<L_86E1,<L_4C28,<L_8763,<L_CCB5,<L_87C9,<L_882B,<L_809D,<L_80EE,<L_81B5,<L_838B,<L_845E,<L_8517,<L_829F,<L_83CD,<L_84EB,<L_85B2,<L_8799,<L_8B48,<L_1D95,<L_87C9,<L_87F3,<L_8810,<L_1D1B,<L_8553,<L_85C3,<L_8604,<L_8623,<L_8646,<L_1BB5,<L_8333,<L_9D0B,<L_0B8C,<L_1B4B,<L_054C,<L_9B77,<L_0B5F,<L_1DEB,<L_8B0C,<L_507E
 
 AreaDataAddrHigh:
-      .byte >L_WaterArea1, >L_WaterArea2, >L_WaterArea3, >L_GroundArea1, >L_GroundArea2, >L_GroundArea3
-      .byte >L_GroundArea4, >L_GroundArea5, >L_GroundArea6, >L_GroundArea7, >L_GroundArea8, >L_GroundArea9
-      .byte >L_GroundArea10, >L_GroundArea11, >L_GroundArea12, >L_GroundArea13, >L_GroundArea14, >L_GroundArea15
-      .byte >L_GroundArea16, >L_GroundArea17, >L_GroundArea18, >L_GroundArea19, >L_GroundArea20, >L_GroundArea21
-      .byte >L_GroundArea22, >L_UndergroundArea1, >L_UndergroundArea2, >L_UndergroundArea3, >L_CastleArea1
-      .byte >L_CastleArea2, >L_CastleArea3, >L_CastleArea4, >L_CastleArea5, >L_CastleArea6
-
-;ENEMY OBJECT DATA
-
-;level 1-4/6-4
-E_CastleArea1:
-      .byte $76, $dd, $bb, $4c, $ea, $1d, $1b, $cc, $56, $5d
-      .byte $16, $9d, $c6, $1d, $36, $9d, $c9, $1d, $04, $db
-      .byte $49, $1d, $84, $1b, $c9, $5d, $88, $95, $0f, $08
-      .byte $30, $4c, $78, $2d, $a6, $28, $90, $b5
-      .byte $ff
-
-;level 4-4
-E_CastleArea2:
-      .byte $0f, $03, $56, $1b, $c9, $1b, $0f, $07, $36, $1b
-      .byte $aa, $1b, $48, $95, $0f, $0a, $2a, $1b, $5b, $0c
-      .byte $78, $2d, $90, $b5
-      .byte $ff
-
-;level 2-4/5-4
-E_CastleArea3:
-      .byte $0b, $8c, $4b, $4c, $77, $5f, $eb, $0c, $bd, $db
-      .byte $19, $9d, $75, $1d, $7d, $5b, $d9, $1d, $3d, $dd
-      .byte $99, $1d, $26, $9d, $5a, $2b, $8a, $2c, $ca, $1b
-      .byte $20, $95, $7b, $5c, $db, $4c, $1b, $cc, $3b, $cc
-      .byte $78, $2d, $a6, $28, $90, $b5
-      .byte $ff
-
-;level 3-4
-E_CastleArea4:
-      .byte $0b, $8c, $3b, $1d, $8b, $1d, $ab, $0c, $db, $1d
-      .byte $0f, $03, $65, $1d, $6b, $1b, $05, $9d, $0b, $1b
-      .byte $05, $9b, $0b, $1d, $8b, $0c, $1b, $8c, $70, $15
-      .byte $7b, $0c, $db, $0c, $0f, $08, $78, $2d, $a6, $28
-      .byte $90, $b5
-      .byte $ff
-
-;level 7-4
-E_CastleArea5:
-      .byte $27, $a9, $4b, $0c, $68, $29, $0f, $06, $77, $1b
-      .byte $0f, $0b, $60, $15, $4b, $8c, $78, $2d, $90, $b5
-      .byte $ff
-
-;level 8-4
-E_CastleArea6:
-      .byte $0f, $03, $8e, $65, $e1, $bb, $38, $6d, $a8, $3e, $e5, $e7
-      .byte $0f, $08, $0b, $02, $2b, $02, $5e, $65, $e1, $bb, $0e
-      .byte $db, $0e, $bb, $8e, $db, $0e, $fe, $65, $ec, $0f, $0d
-      .byte $4e, $65, $e1, $0f, $0e, $4e, $02, $e0, $0f, $10, $fe, $e5, $e1
-      .byte $1b, $85, $7b, $0c, $5b, $95, $78, $2d, $90, $b5
-      .byte $ff
-
-;level 3-3
-E_GroundArea1:
-      .byte $a5, $86, $e4, $28, $18, $a8, $45, $83, $69, $03
-      .byte $c6, $29, $9b, $83, $16, $a4, $88, $24, $e9, $28
-      .byte $05, $a8, $7b, $28, $24, $8f, $c8, $03, $e8, $03
-      .byte $46, $a8, $85, $24, $c8, $24
-      .byte $ff
-
-;level 8-3
-E_GroundArea2:
-      .byte $eb, $8e, $0f, $03, $fb, $05, $17, $85, $db, $8e
-      .byte $0f, $07, $57, $05, $7b, $05, $9b, $80, $2b, $85
-      .byte $fb, $05, $0f, $0b, $1b, $05, $9b, $05
-      .byte $ff
-
-;level 4-1
-E_GroundArea3:
-      .byte $2e, $c2, $66, $e2, $11, $0f, $07, $02, $11, $0f, $0c
-      .byte $12, $11
-      .byte $ff
-
-;level 6-2
-E_GroundArea4:
-      .byte $0e, $c2, $a8, $ab, $00, $bb, $8e, $6b, $82, $de, $00, $a0
-      .byte $33, $86, $43, $06, $3e, $b4, $a0, $cb, $02, $0f, $07
-      .byte $7e, $42, $a6, $83, $02, $0f, $0a, $3b, $02, $cb, $37
-      .byte $0f, $0c, $e3, $0e
-      .byte $ff
-
-;level 3-1
-E_GroundArea5:
-      .byte $9b, $8e, $ca, $0e, $ee, $42, $44, $5b, $86, $80, $b8
-      .byte $1b, $80, $50, $ba, $10, $b7, $5b, $00, $17, $85
-      .byte $4b, $05, $fe, $34, $40, $b7, $86, $c6, $06, $5b, $80
-      .byte $83, $00, $d0, $38, $5b, $8e, $8a, $0e, $a6, $00
-      .byte $bb, $0e, $c5, $80, $f3, $00
-      .byte $ff
-
-;level 1-1
-E_GroundArea6:
-      .byte $1e, $c2, $00, $6b, $06, $8b, $86, $63, $b7, $0f, $05
-      .byte $03, $06, $23, $06, $4b, $b7, $bb, $00, $5b, $b7
-      .byte $fb, $37, $3b, $b7, $0f, $0b, $1b, $37
-      .byte $ff
-
-;level 1-3/5-3
-E_GroundArea7:
-      .byte $2b, $d7, $e3, $03, $c2, $86, $e2, $06, $76, $a5
-      .byte $a3, $8f, $03, $86, $2b, $57, $68, $28, $e9, $28
-      .byte $e5, $83, $24, $8f, $36, $a8, $5b, $03
-      .byte $ff
-
-;level 2-3/7-3
-E_GroundArea8:
-      .byte $0f, $02, $78, $40, $48, $ce, $f8, $c3, $f8, $c3
-      .byte $0f, $07, $7b, $43, $c6, $d0, $0f, $8a, $c8, $50
-      .byte $ff
-
-;level 2-1
-E_GroundArea9:
-      .byte $85, $86, $0b, $80, $1b, $00, $db, $37, $77, $80
-      .byte $eb, $37, $fe, $2b, $20, $2b, $80, $7b, $38, $ab, $b8
-      .byte $77, $86, $fe, $42, $20, $49, $86, $8b, $06, $9b, $80
-      .byte $7b, $8e, $5b, $b7, $9b, $0e, $bb, $0e, $9b, $80
-;end of data terminator here is also used by pipe intro area
-E_GroundArea10:
-      .byte $ff
-
-;level 5-1
-E_GroundArea11:
-      .byte $0b, $80, $60, $38, $10, $b8, $c0, $3b, $db, $8e
-      .byte $40, $b8, $f0, $38, $7b, $8e, $a0, $b8, $c0, $b8
-      .byte $fb, $00, $a0, $b8, $30, $bb, $ee, $42, $88, $0f, $0b
-      .byte $2b, $0e, $67, $0e
-      .byte $ff
-
-;cloud level used in levels 2-1 and 5-2
-E_GroundArea12:
-      .byte $0a, $aa, $0e, $28, $2a, $0e, $31, $88
-      .byte $ff
-
-;level 4-3
-E_GroundArea13:
-      .byte $c7, $83, $d7, $03, $42, $8f, $7a, $03, $05, $a4
-      .byte $78, $24, $a6, $25, $e4, $25, $4b, $83, $e3, $03
-      .byte $05, $a4, $89, $24, $b5, $24, $09, $a4, $65, $24
-      .byte $c9, $24, $0f, $08, $85, $25
-      .byte $ff
-
-;level 6-3
-E_GroundArea14:
-      .byte $cd, $a5, $b5, $a8, $07, $a8, $76, $28, $cc, $25
-      .byte $65, $a4, $a9, $24, $e5, $24, $19, $a4, $0f, $07
-      .byte $95, $28, $e6, $24, $19, $a4, $d7, $29, $16, $a9
-      .byte $58, $29, $97, $29
-      .byte $ff
-
-;level 6-1
-E_GroundArea15:
-      .byte $0f, $02, $02, $11, $0f, $07, $02, $11
-      .byte $ff
-
-;warp zone area used in level 4-2
-E_GroundArea16:
-      .byte $ff
-
-;level 8-1
-E_GroundArea17:
-      .byte $2b, $82, $ab, $38, $de, $42, $e2, $1b, $b8, $eb
-      .byte $3b, $db, $80, $8b, $b8, $1b, $82, $fb, $b8, $7b
-      .byte $80, $fb, $3c, $5b, $bc, $7b, $b8, $1b, $8e, $cb
-      .byte $0e, $1b, $8e, $0f, $0d, $2b, $3b, $bb, $b8, $eb, $82
-      .byte $4b, $b8, $bb, $38, $3b, $b7, $bb, $02, $0f, $13
-      .byte $1b, $00, $cb, $80, $6b, $bc
-      .byte $ff
-
-;level 5-2
-E_GroundArea18:
-      .byte $7b, $80, $ae, $00, $80, $8b, $8e, $e8, $05, $f9, $86 
-      .byte $17, $86, $16, $85, $4e, $2b, $80, $ab, $8e, $87, $85
-      .byte $c3, $05, $8b, $82, $9b, $02, $ab, $02, $bb, $86
-      .byte $cb, $06, $d3, $03, $3b, $8e, $6b, $0e, $a7, $8e
-      .byte $ff
-
-;level 8-2
-E_GroundArea19:
-      .byte $29, $8e, $52, $11, $83, $0e, $0f, $03, $9b, $0e
-      .byte $2b, $8e, $5b, $0e, $cb, $8e, $fb, $0e, $fb, $82
-      .byte $9b, $82, $bb, $02, $fe, $42, $e8, $bb, $8e, $0f, $0a
-      .byte $ab, $0e, $cb, $0e, $f9, $0e, $88, $86, $a6, $06
-      .byte $db, $02, $b6, $8e
-      .byte $ff
-
-;level 7-1
-E_GroundArea20:
-      .byte $ab, $ce, $de, $42, $c0, $cb, $ce, $5b, $8e, $1b, $ce
-      .byte $4b, $85, $67, $45, $0f, $07, $2b, $00, $7b, $85
-      .byte $97, $05, $0f, $0a, $92, $02
-      .byte $ff
-
-;cloud level used in levels 3-1 and 6-2
-E_GroundArea21:
-      .byte $0a, $aa, $0e, $24, $4a, $1e, $23, $aa
-      .byte $ff
-
-;level 3-2
-E_GroundArea22:
-      .byte $1b, $80, $bb, $38, $4b, $bc, $eb, $3b, $0f, $04
-      .byte $2b, $00, $ab, $38, $eb, $00, $cb, $8e, $fb, $80
-      .byte $ab, $b8, $6b, $80, $fb, $3c, $9b, $bb, $5b, $bc
-      .byte $fb, $00, $6b, $b8, $fb, $38
-      .byte $ff
-
-;level 1-2
-E_UndergroundArea1:
-      .byte $0b, $86, $1a, $06, $db, $06, $de, $c2, $02, $f0, $3b
-      .byte $bb, $80, $eb, $06, $0b, $86, $93, $06, $f0, $39
-      .byte $0f, $06, $60, $b8, $1b, $86, $a0, $b9, $b7, $27
-      .byte $bd, $27, $2b, $83, $a1, $26, $a9, $26, $ee, $25, $0b
-      .byte $27, $b4
-      .byte $ff
-
-;level 4-2
-E_UndergroundArea2:
-      .byte $0f, $02, $1e, $2f, $60, $e0, $3a, $a5, $a7, $db, $80
-      .byte $3b, $82, $8b, $02, $fe, $42, $68, $70, $bb, $25, $a7
-      .byte $2c, $27, $b2, $26, $b9, $26, $9b, $80, $a8, $82
-      .byte $b5, $27, $bc, $27, $b0, $bb, $3b, $82, $87, $34
-      .byte $ee, $25, $6b
-      .byte $ff
-
-;underground bonus rooms area used in many levels
-E_UndergroundArea3:
-      .byte $1e, $a5, $0a, $2e, $28, $27, $2e, $33, $c7, $0f, $03, $1e, $40, $07
-      .byte $2e, $30, $e7, $0f, $05, $1e, $24, $44, $0f, $07, $1e, $22, $6a
-      .byte $2e, $23, $ab, $0f, $09, $1e, $41, $68, $1e, $2a, $8a, $2e, $23, $a2
-      .byte $2e, $32, $ea
-      .byte $ff
-
-;water area used in levels 5-2 and 6-2
-E_WaterArea1:
-      .byte $3b, $87, $66, $27, $cc, $27, $ee, $31, $87, $ee, $23, $a7
-      .byte $3b, $87, $db, $07
-      .byte $ff
-
-;level 2-2/7-2
-E_WaterArea2:
-      .byte $0f, $01, $2e, $25, $2b, $2e, $25, $4b, $4e, $25, $cb, $6b, $07
-      .byte $97, $47, $e9, $87, $47, $c7, $7a, $07, $d6, $c7
-      .byte $78, $07, $38, $87, $ab, $47, $e3, $07, $9b, $87
-      .byte $0f, $09, $68, $47, $db, $c7, $3b, $c7
-      .byte $ff
-
-;water area used in level 8-4
-E_WaterArea3:
-      .byte $47, $9b, $cb, $07, $fa, $1d, $86, $9b, $3a, $87
-      .byte $56, $07, $88, $1b, $07, $9d, $2e, $65, $f0
-      .byte $ff
-
-;AREA OBJECT DATA
-
-;level 1-4/6-4
-L_CastleArea1:
-      .byte $9b, $07
-      .byte $05, $32, $06, $33, $07, $34, $ce, $03, $dc, $51
-      .byte $ee, $07, $73, $e0, $74, $0a, $7e, $06, $9e, $0a
-      .byte $ce, $06, $e4, $00, $e8, $0a, $fe, $0a, $2e, $89
-      .byte $4e, $0b, $54, $0a, $14, $8a, $c4, $0a, $34, $8a
-      .byte $7e, $06, $c7, $0a, $01, $e0, $02, $0a, $47, $0a
-      .byte $81, $60, $82, $0a, $c7, $0a, $0e, $87, $7e, $02
-      .byte $a7, $02, $b3, $02, $d7, $02, $e3, $02, $07, $82
-      .byte $13, $02, $3e, $06, $7e, $02, $ae, $07, $fe, $0a
-      .byte $0d, $c4, $cd, $43, $ce, $09, $de, $0b, $dd, $42
-      .byte $fe, $02, $5d, $c7
-      .byte $fd
-
-;level 4-4
-L_CastleArea2:
-      .byte $5b, $07
-      .byte $05, $32, $06, $33, $07, $34, $5e, $0a, $68, $64
-      .byte $98, $64, $a8, $64, $ce, $06, $fe, $02, $0d, $01
-      .byte $1e, $0e, $7e, $02, $94, $63, $b4, $63, $d4, $63
-      .byte $f4, $63, $14, $e3, $2e, $0e, $5e, $02, $64, $35
-      .byte $88, $72, $be, $0e, $0d, $04, $ae, $02, $ce, $08
-      .byte $cd, $4b, $fe, $02, $0d, $05, $68, $31, $7e, $0a
-      .byte $96, $31, $a9, $63, $a8, $33, $d5, $30, $ee, $02
-      .byte $e6, $62, $f4, $61, $04, $b1, $08, $3f, $44, $33
-      .byte $94, $63, $a4, $31, $e4, $31, $04, $bf, $08, $3f
-      .byte $04, $bf, $08, $3f, $cd, $4b, $03, $e4, $0e, $03
-      .byte $2e, $01, $7e, $06, $be, $02, $de, $06, $fe, $0a
-      .byte $0d, $c4, $cd, $43, $ce, $09, $de, $0b, $dd, $42
-      .byte $fe, $02, $5d, $c7
-      .byte $fd
-
-;level 2-4/5-4
-L_CastleArea3:
-      .byte $9b, $07
-      .byte $05, $32, $06, $33, $07, $34, $fe, $00, $27, $b1
-      .byte $65, $32, $75, $0a, $71, $00, $b7, $31, $08, $e4
-      .byte $18, $64, $1e, $04, $57, $3b, $bb, $0a, $17, $8a
-      .byte $27, $3a, $73, $0a, $7b, $0a, $d7, $0a, $e7, $3a
-      .byte $3b, $8a, $97, $0a, $fe, $08, $24, $8a, $2e, $00
-      .byte $3e, $40, $38, $64, $6f, $00, $9f, $00, $be, $43
-      .byte $c8, $0a, $c9, $63, $ce, $07, $fe, $07, $2e, $81
-      .byte $66, $42, $6a, $42, $79, $0a, $be, $00, $c8, $64
-      .byte $f8, $64, $08, $e4, $2e, $07, $7e, $03, $9e, $07
-      .byte $be, $03, $de, $07, $fe, $0a, $03, $a5, $0d, $44
-      .byte $cd, $43, $ce, $09, $dd, $42, $de, $0b, $fe, $02
-      .byte $5d, $c7
-      .byte $fd
-
-;level 3-4
-L_CastleArea4:
-      .byte $9b, $07
-      .byte $05, $32, $06, $33, $07, $34, $fe, $06, $0c, $81
-      .byte $39, $0a, $5c, $01, $89, $0a, $ac, $01, $d9, $0a
-      .byte $fc, $01, $2e, $83, $a7, $01, $b7, $00, $c7, $01
-      .byte $de, $0a, $fe, $02, $4e, $83, $5a, $32, $63, $0a
-      .byte $69, $0a, $7e, $02, $ee, $03, $fa, $32, $03, $8a
-      .byte $09, $0a, $1e, $02, $ee, $03, $fa, $32, $03, $8a
-      .byte $09, $0a, $14, $42, $1e, $02, $7e, $0a, $9e, $07
-      .byte $fe, $0a, $2e, $86, $5e, $0a, $8e, $06, $be, $0a
-      .byte $ee, $07, $3e, $83, $5e, $07, $fe, $0a, $0d, $c4
-      .byte $41, $52, $51, $52, $cd, $43, $ce, $09, $de, $0b
-      .byte $dd, $42, $fe, $02, $5d, $c7
-      .byte $fd
-
-;level 7-4
-L_CastleArea5:
-      .byte $5b, $07
-      .byte $05, $32, $06, $33, $07, $34, $fe, $0a, $ae, $86
-      .byte $be, $07, $fe, $02, $0d, $02, $27, $32, $46, $61
-      .byte $55, $62, $5e, $0e, $1e, $82, $68, $3c, $74, $3a
-      .byte $7d, $4b, $5e, $8e, $7d, $4b, $7e, $82, $84, $62
-      .byte $94, $61, $a4, $31, $bd, $4b, $ce, $06, $fe, $02
-      .byte $0d, $06, $34, $31, $3e, $0a, $64, $32, $75, $0a
-      .byte $7b, $61, $a4, $33, $ae, $02, $de, $0e, $3e, $82
-      .byte $64, $32, $78, $32, $b4, $36, $c8, $36, $dd, $4b
-      .byte $44, $b2, $58, $32, $94, $63, $a4, $3e, $ba, $30
-      .byte $c9, $61, $ce, $06, $dd, $4b, $ce, $86, $dd, $4b
-      .byte $fe, $02, $2e, $86, $5e, $02, $7e, $06, $fe, $02
-      .byte $1e, $86, $3e, $02, $5e, $06, $7e, $02, $9e, $06
-      .byte $fe, $0a, $0d, $c4, $cd, $43, $ce, $09, $de, $0b
-      .byte $dd, $42, $fe, $02, $5d, $c7
-      .byte $fd
-
-;level 8-4
-L_CastleArea6:
-      .byte $5b, $06
-      .byte $05, $32, $06, $33, $07, $34, $5e, $0a, $ae, $02
-      .byte $0d, $01, $39, $73, $0d, $03, $39, $7b, $4d, $4b
-      .byte $de, $06, $1e, $8a, $ae, $06, $c4, $33, $16, $fe
-      .byte $a5, $77, $fe, $02, $fe, $82, $0d, $07, $39, $73
-      .byte $a8, $74, $ed, $4b, $49, $fb, $e8, $74, $fe, $0a
-      .byte $2e, $82, $67, $02, $84, $7a, $87, $31, $0d, $0b
-      .byte $fe, $02, $0d, $0c, $39, $73, $5e, $06, $c6, $76
-      .byte $45, $ff, $be, $0a, $dd, $48, $fe, $06, $3d, $cb
-      .byte $46, $7e, $ad, $4a, $fe, $82, $39, $f3, $a9, $7b
-      .byte $4e, $8a, $9e, $07, $fe, $0a, $0d, $c4, $cd, $43
-      .byte $ce, $09, $de, $0b, $dd, $42, $fe, $02, $5d, $c7
-      .byte $fd
-
-;level 3-3
-L_GroundArea1:
-      .byte $94, $11
-      .byte $0f, $26, $fe, $10, $28, $94, $65, $15, $eb, $12
-      .byte $fa, $41, $4a, $96, $54, $40, $a4, $42, $b7, $13
-      .byte $e9, $19, $f5, $15, $11, $80, $47, $42, $71, $13
-      .byte $80, $41, $15, $92, $1b, $1f, $24, $40, $55, $12
-      .byte $64, $40, $95, $12, $a4, $40, $d2, $12, $e1, $40
-      .byte $13, $c0, $2c, $17, $2f, $12, $49, $13, $83, $40
-      .byte $9f, $14, $a3, $40, $17, $92, $83, $13, $92, $41
-      .byte $b9, $14, $c5, $12, $c8, $40, $d4, $40, $4b, $92
-      .byte $78, $1b, $9c, $94, $9f, $11, $df, $14, $fe, $11
-      .byte $7d, $c1, $9e, $42, $cf, $20
-      .byte $fd
-
-;level 8-3
-L_GroundArea2:
-      .byte $90, $b1
-      .byte $0f, $26, $29, $91, $7e, $42, $fe, $40, $28, $92
-      .byte $4e, $42, $2e, $c0, $57, $73, $c3, $25, $c7, $27
-      .byte $23, $84, $33, $20, $5c, $01, $77, $63, $88, $62
-      .byte $99, $61, $aa, $60, $bc, $01, $ee, $42, $4e, $c0
-      .byte $69, $11, $7e, $42, $de, $40, $f8, $62, $0e, $c2
-      .byte $ae, $40, $d7, $63, $e7, $63, $33, $a7, $37, $27
-      .byte $43, $04, $cc, $01, $e7, $73, $0c, $81, $3e, $42
-      .byte $0d, $0a, $5e, $40, $88, $72, $be, $42, $e7, $87
-      .byte $fe, $40, $39, $e1, $4e, $00, $69, $60, $87, $60
-      .byte $a5, $60, $c3, $31, $fe, $31, $6d, $c1, $be, $42
-      .byte $ef, $20
-      .byte $fd
-
-;level 4-1
-L_GroundArea3:
-      .byte $52, $21
-      .byte $0f, $20, $6e, $40, $58, $f2, $93, $01, $97, $00
-      .byte $0c, $81, $97, $40, $a6, $41, $c7, $40, $0d, $04
-      .byte $03, $01, $07, $01, $23, $01, $27, $01, $ec, $03
-      .byte $ac, $f3, $c3, $03, $78, $e2, $94, $43, $47, $f3
-      .byte $74, $43, $47, $fb, $74, $43, $2c, $f1, $4c, $63
-      .byte $47, $00, $57, $21, $5c, $01, $7c, $72, $39, $f1
-      .byte $ec, $02, $4c, $81, $d8, $62, $ec, $01, $0d, $0d
-      .byte $0f, $38, $c7, $07, $ed, $4a, $1d, $c1, $5f, $26
-      .byte $fd
-
-;level 6-2
-L_GroundArea4:
-      .byte $54, $21
-      .byte $0f, $26, $a7, $22, $37, $fb, $73, $20, $83, $07
-      .byte $87, $02, $93, $20, $c7, $73, $04, $f1, $06, $31
-      .byte $39, $71, $59, $71, $e7, $73, $37, $a0, $47, $04
-      .byte $86, $7c, $e5, $71, $e7, $31, $33, $a4, $39, $71
-      .byte $a9, $71, $d3, $23, $08, $f2, $13, $05, $27, $02
-      .byte $49, $71, $75, $75, $e8, $72, $67, $f3, $99, $71
-      .byte $e7, $20, $f4, $72, $f7, $31, $17, $a0, $33, $20
-      .byte $39, $71, $73, $28, $bc, $05, $39, $f1, $79, $71
-      .byte $a6, $21, $c3, $06, $d3, $20, $dc, $00, $fc, $00
-      .byte $07, $a2, $13, $21, $5f, $32, $8c, $00, $98, $7a
-      .byte $c7, $63, $d9, $61, $03, $a2, $07, $22, $74, $72
-      .byte $77, $31, $e7, $73, $39, $f1, $58, $72, $77, $73
-      .byte $d8, $72, $7f, $b1, $97, $73, $b6, $64, $c5, $65
-      .byte $d4, $66, $e3, $67, $f3, $67, $8d, $c1, $cf, $26
-      .byte $fd
-
-;level 3-1
-L_GroundArea5:
-      .byte $52, $31
-      .byte $0f, $20, $6e, $66, $07, $81, $36, $01, $66, $00
-      .byte $a7, $22, $08, $f2, $67, $7b, $dc, $02, $98, $f2
-      .byte $d7, $20, $39, $f1, $9f, $33, $dc, $27, $dc, $57
-      .byte $23, $83, $57, $63, $6c, $51, $87, $63, $99, $61
-      .byte $a3, $06, $b3, $21, $77, $f3, $f3, $21, $f7, $2a
-      .byte $13, $81, $23, $22, $53, $00, $63, $22, $e9, $0b
-      .byte $0c, $83, $13, $21, $16, $22, $33, $05, $8f, $35
-      .byte $ec, $01, $63, $a0, $67, $20, $73, $01, $77, $01
-      .byte $83, $20, $87, $20, $b3, $20, $b7, $20, $c3, $01
-      .byte $c7, $00, $d3, $20, $d7, $20, $67, $a0, $77, $07
-      .byte $87, $22, $e8, $62, $f5, $65, $1c, $82, $7f, $38
-      .byte $8d, $c1, $cf, $26
-      .byte $fd
-
-;level 1-1
-L_GroundArea6:
-      .byte $50, $21
-      .byte $07, $81, $47, $24, $57, $00, $63, $01, $77, $01
-      .byte $c9, $71, $68, $f2, $e7, $73, $97, $fb, $06, $83
-      .byte $5c, $01, $d7, $22, $e7, $00, $03, $a7, $6c, $02
-      .byte $b3, $22, $e3, $01, $e7, $07, $47, $a0, $57, $06
-      .byte $a7, $01, $d3, $00, $d7, $01, $07, $81, $67, $20
-      .byte $93, $22, $03, $a3, $1c, $61, $17, $21, $6f, $33
-      .byte $c7, $63, $d8, $62, $e9, $61, $fa, $60, $4f, $b3
-      .byte $87, $63, $9c, $01, $b7, $63, $c8, $62, $d9, $61
-      .byte $ea, $60, $39, $f1, $87, $21, $a7, $01, $b7, $20
-      .byte $39, $f1, $5f, $38, $6d, $c1, $af, $26
-      .byte $fd
-
-;level 1-3/5-3
-L_GroundArea7:
-      .byte $90, $11
-      .byte $0f, $26, $fe, $10, $2a, $93, $87, $17, $a3, $14
-      .byte $b2, $42, $0a, $92, $19, $40, $36, $14, $50, $41
-      .byte $82, $16, $2b, $93, $24, $41, $bb, $14, $b8, $00
-      .byte $c2, $43, $c3, $13, $1b, $94, $67, $12, $c4, $15
-      .byte $53, $c1, $d2, $41, $12, $c1, $29, $13, $85, $17
-      .byte $1b, $92, $1a, $42, $47, $13, $83, $41, $a7, $13
-      .byte $0e, $91, $a7, $63, $b7, $63, $c5, $65, $d5, $65
-      .byte $dd, $4a, $e3, $67, $f3, $67, $8d, $c1, $ae, $42
-      .byte $df, $20
-      .byte $fd
-
-;level 2-3/7-3
-L_GroundArea8:
-      .byte $90, $11
-      .byte $0f, $26, $6e, $10, $8b, $17, $af, $32, $d8, $62
-      .byte $e8, $62, $fc, $3f, $ad, $c8, $f8, $64, $0c, $be
-      .byte $43, $43, $f8, $64, $0c, $bf, $73, $40, $84, $40
-      .byte $93, $40, $a4, $40, $b3, $40, $f8, $64, $48, $e4
-      .byte $5c, $39, $83, $40, $92, $41, $b3, $40, $f8, $64
-      .byte $48, $e4, $5c, $39, $f8, $64, $13, $c2, $37, $65
-      .byte $4c, $24, $63, $00, $97, $65, $c3, $42, $0b, $97
-      .byte $ac, $32, $f8, $64, $0c, $be, $53, $45, $9d, $48
-      .byte $f8, $64, $2a, $e2, $3c, $47, $56, $43, $ba, $62
-      .byte $f8, $64, $0c, $b7, $88, $64, $bc, $31, $d4, $45
-      .byte $fc, $31, $3c, $b1, $78, $64, $8c, $38, $0b, $9c
-      .byte $1a, $33, $18, $61, $28, $61, $39, $60, $5d, $4a
-      .byte $ee, $11, $0f, $b8, $1d, $c1, $3e, $42, $6f, $20
-      .byte $fd
-
-;level 2-1
-L_GroundArea9:
-      .byte $52, $31
-      .byte $0f, $20, $6e, $40, $f7, $20, $07, $84, $17, $20
-      .byte $4f, $34, $c3, $03, $c7, $02, $d3, $22, $27, $e3
-      .byte $39, $61, $e7, $73, $5c, $e4, $57, $00, $6c, $73
-      .byte $47, $a0, $53, $06, $63, $22, $a7, $73, $fc, $73
-      .byte $13, $a1, $33, $05, $43, $21, $5c, $72, $c3, $23
-      .byte $cc, $03, $77, $fb, $ac, $02, $39, $f1, $a7, $73
-      .byte $d3, $04, $e8, $72, $e3, $22, $26, $f4, $bc, $02
-      .byte $8c, $81, $a8, $62, $17, $87, $43, $24, $a7, $01
-      .byte $c3, $04, $08, $f2, $97, $21, $a3, $02, $c9, $0b
-      .byte $e1, $69, $f1, $69, $8d, $c1, $cf, $26
-      .byte $fd
-
-;pipe intro area
-L_GroundArea10:
-      .byte $38, $11
-      .byte $0f, $26, $ad, $40, $3d, $c7
-      .byte $fd
-
-;level 5-1
-L_GroundArea11:
-      .byte $95, $b1
-      .byte $0f, $26, $0d, $02, $c8, $72, $1c, $81, $38, $72
-      .byte $0d, $05, $97, $34, $98, $62, $a3, $20, $b3, $06
-      .byte $c3, $20, $cc, $03, $f9, $91, $2c, $81, $48, $62
-      .byte $0d, $09, $37, $63, $47, $03, $57, $21, $8c, $02
-      .byte $c5, $79, $c7, $31, $f9, $11, $39, $f1, $a9, $11
-      .byte $6f, $b4, $d3, $65, $e3, $65, $7d, $c1, $bf, $26
-      .byte $fd
-
-;cloud level used in levels 2-1 and 5-2
-L_GroundArea12:
-      .byte $00, $c1
-      .byte $4c, $00, $f4, $4f, $0d, $02, $02, $42, $43, $4f
-      .byte $52, $c2, $de, $00, $5a, $c2, $4d, $c7
-      .byte $fd
-
-;level 4-3
-L_GroundArea13:
-      .byte $90, $51
-      .byte $0f, $26, $ee, $10, $0b, $94, $33, $14, $42, $42
-      .byte $77, $16, $86, $44, $02, $92, $4a, $16, $69, $42
-      .byte $73, $14, $b0, $00, $c7, $12, $05, $c0, $1c, $17
-      .byte $1f, $11, $36, $12, $8f, $14, $91, $40, $1b, $94
-      .byte $35, $12, $34, $42, $60, $42, $61, $12, $87, $12
-      .byte $96, $40, $a3, $14, $1c, $98, $1f, $11, $47, $12
-      .byte $9f, $15, $cc, $15, $cf, $11, $05, $c0, $1f, $15
-      .byte $39, $12, $7c, $16, $7f, $11, $82, $40, $98, $12
-      .byte $df, $15, $16, $c4, $17, $14, $54, $12, $9b, $16
-      .byte $28, $94, $ce, $01, $3d, $c1, $5e, $42, $8f, $20
-      .byte $fd
-
-;level 6-3
-L_GroundArea14:
-      .byte $97, $11
-      .byte $0f, $26, $fe, $10, $2b, $92, $57, $12, $8b, $12
-      .byte $c0, $41, $f7, $13, $5b, $92, $69, $0b, $bb, $12
-      .byte $b2, $46, $19, $93, $71, $00, $17, $94, $7c, $14
-      .byte $7f, $11, $93, $41, $bf, $15, $fc, $13, $ff, $11
-      .byte $2f, $95, $50, $42, $51, $12, $58, $14, $a6, $12
-      .byte $db, $12, $1b, $93, $46, $43, $7b, $12, $8d, $49
-      .byte $b7, $14, $1b, $94, $49, $0b, $bb, $12, $fc, $13
-      .byte $ff, $12, $03, $c1, $2f, $15, $43, $12, $4b, $13
-      .byte $77, $13, $9d, $4a, $15, $c1, $a1, $41, $c3, $12
-      .byte $fe, $01, $7d, $c1, $9e, $42, $cf, $20
-      .byte $fd
-
-;level 6-1
-L_GroundArea15:
-      .byte $52, $21
-      .byte $0f, $20, $6e, $44, $0c, $f1, $4c, $01, $aa, $35
-      .byte $d9, $34, $ee, $20, $08, $b3, $37, $32, $43, $04
-      .byte $4e, $21, $53, $20, $7c, $01, $97, $21, $b7, $07
-      .byte $9c, $81, $e7, $42, $5f, $b3, $97, $63, $ac, $02
-      .byte $c5, $41, $49, $e0, $58, $61, $76, $64, $85, $65
-      .byte $94, $66, $a4, $22, $a6, $03, $c8, $22, $dc, $02
-      .byte $68, $f2, $96, $42, $13, $82, $17, $02, $af, $34
-      .byte $f6, $21, $fc, $06, $26, $80, $2a, $24, $36, $01
-      .byte $8c, $00, $ff, $35, $4e, $a0, $55, $21, $77, $20
-      .byte $87, $07, $89, $22, $ae, $21, $4c, $82, $9f, $34
-      .byte $ec, $01, $03, $e7, $13, $67, $8d, $4a, $ad, $41
-      .byte $0f, $a6
-      .byte $fd
-
-;warp zone area used in level 4-2
-L_GroundArea16:
-      .byte $10, $51
-      .byte $4c, $00, $c7, $12, $c6, $42, $03, $92, $02, $42
-      .byte $29, $12, $63, $12, $62, $42, $69, $14, $a5, $12
-      .byte $a4, $42, $e2, $14, $e1, $44, $f8, $16, $37, $c1
-      .byte $8f, $38, $02, $bb, $28, $7a, $68, $7a, $a8, $7a
-      .byte $e0, $6a, $f0, $6a, $6d, $c5
-      .byte $fd
-
-;level 8-1
-L_GroundArea17:
-      .byte $92, $31
-      .byte $0f, $20, $6e, $40, $0d, $02, $37, $73, $ec, $00
-      .byte $0c, $80, $3c, $00, $6c, $00, $9c, $00, $06, $c0
-      .byte $c7, $73, $06, $83, $28, $72, $96, $40, $e7, $73
-      .byte $26, $c0, $87, $7b, $d2, $41, $39, $f1, $c8, $f2
-      .byte $97, $e3, $a3, $23, $e7, $02, $e3, $07, $f3, $22
-      .byte $37, $e3, $9c, $00, $bc, $00, $ec, $00, $0c, $80
-      .byte $3c, $00, $86, $21, $a6, $06, $b6, $24, $5c, $80
-      .byte $7c, $00, $9c, $00, $29, $e1, $dc, $05, $f6, $41
-      .byte $dc, $80, $e8, $72, $0c, $81, $27, $73, $4c, $01
-      .byte $66, $74, $0d, $11, $3f, $35, $b6, $41, $2c, $82
-      .byte $36, $40, $7c, $02, $86, $40, $f9, $61, $39, $e1
-      .byte $ac, $04, $c6, $41, $0c, $83, $16, $41, $88, $f2
-      .byte $39, $f1, $7c, $00, $89, $61, $9c, $00, $a7, $63
-      .byte $bc, $00, $c5, $65, $dc, $00, $e3, $67, $f3, $67
-      .byte $8d, $c1, $cf, $26
-      .byte $fd
-
-;level 5-2
-L_GroundArea18:
-      .byte $55, $b1
-      .byte $0f, $26, $cf, $33, $07, $b2, $15, $11, $52, $42
-      .byte $99, $0b, $ac, $02, $d3, $24, $d6, $42, $d7, $25
-      .byte $23, $84, $cf, $33, $07, $e3, $19, $61, $78, $7a
-      .byte $ef, $33, $2c, $81, $46, $64, $55, $65, $65, $65
-      .byte $ec, $74, $47, $82, $53, $05, $63, $21, $62, $41
-      .byte $96, $22, $9a, $41, $cc, $03, $b9, $91, $39, $f1
-      .byte $63, $26, $67, $27, $d3, $06, $fc, $01, $18, $e2
-      .byte $d9, $07, $e9, $04, $0c, $86, $37, $22, $93, $24
-      .byte $87, $84, $ac, $02, $c2, $41, $c3, $23, $d9, $71
-      .byte $fc, $01, $7f, $b1, $9c, $00, $a7, $63, $b6, $64
-      .byte $cc, $00, $d4, $66, $e3, $67, $f3, $67, $8d, $c1
-      .byte $cf, $26
-      .byte $fd
-
-;level 8-2
-L_GroundArea19:
-      .byte $50, $b1
-      .byte $0f, $26, $fc, $00, $1f, $b3, $5c, $00, $65, $65
-      .byte $74, $66, $83, $67, $93, $67, $dc, $73, $4c, $80
-      .byte $b3, $20, $c9, $0b, $c3, $08, $d3, $2f, $dc, $00
-      .byte $2c, $80, $4c, $00, $8c, $00, $d3, $2e, $ed, $4a
-      .byte $fc, $00, $d7, $a1, $ec, $01, $4c, $80, $59, $11
-      .byte $d8, $11, $da, $10, $37, $a0, $47, $04, $99, $11
-      .byte $e7, $21, $3a, $90, $67, $20, $76, $10, $77, $60
-      .byte $87, $07, $d8, $12, $39, $f1, $ac, $00, $e9, $71
-      .byte $0c, $80, $2c, $00, $4c, $05, $c7, $7b, $39, $f1
-      .byte $ec, $00, $f9, $11, $0c, $82, $6f, $34, $f8, $11
-      .byte $fa, $10, $7f, $b2, $ac, $00, $b6, $64, $cc, $01
-      .byte $e3, $67, $f3, $67, $8d, $c1, $cf, $26
-      .byte $fd
-
-;level 7-1
-L_GroundArea20:
-      .byte $52, $b1
-      .byte $0f, $20, $6e, $45, $39, $91, $b3, $04, $c3, $21
-      .byte $c8, $11, $ca, $10, $49, $91, $7c, $73, $e8, $12
-      .byte $88, $91, $8a, $10, $e7, $21, $05, $91, $07, $30
-      .byte $17, $07, $27, $20, $49, $11, $9c, $01, $c8, $72
-      .byte $23, $a6, $27, $26, $d3, $03, $d8, $7a, $89, $91
-      .byte $d8, $72, $39, $f1, $a9, $11, $09, $f1, $63, $24
-      .byte $67, $24, $d8, $62, $28, $91, $2a, $10, $56, $21
-      .byte $70, $04, $79, $0b, $8c, $00, $94, $21, $9f, $35
-      .byte $2f, $b8, $3d, $c1, $7f, $26
-      .byte $fd
-
-;cloud level used in levels 3-1 and 6-2
-L_GroundArea21:
-      .byte $06, $c1
-      .byte $4c, $00, $f4, $4f, $0d, $02, $06, $20, $24, $4f
-      .byte $35, $a0, $36, $20, $53, $46, $d5, $20, $d6, $20
-      .byte $34, $a1, $73, $49, $74, $20, $94, $20, $b4, $20
-      .byte $d4, $20, $f4, $20, $2e, $80, $59, $42, $4d, $c7
-      .byte $fd
-
-;level 3-2
-L_GroundArea22:
-      .byte $96, $31
-      .byte $0f, $26, $0d, $03, $1a, $60, $77, $42, $c4, $00
-      .byte $c8, $62, $b9, $e1, $d3, $06, $d7, $07, $f9, $61
-      .byte $0c, $81, $4e, $b1, $8e, $b1, $bc, $01, $e4, $50
-      .byte $e9, $61, $0c, $81, $0d, $0a, $84, $43, $98, $72
-      .byte $0d, $0c, $0f, $38, $1d, $c1, $5f, $26
-      .byte $fd
-
-;level 1-2
-L_UndergroundArea1:
-      .byte $48, $0f
-      .byte $0e, $01, $5e, $02, $a7, $00, $bc, $73, $1a, $e0
-      .byte $39, $61, $58, $62, $77, $63, $97, $63, $b8, $62
-      .byte $d6, $07, $f8, $62, $19, $e1, $75, $52, $86, $40
-      .byte $87, $50, $95, $52, $93, $43, $a5, $21, $c5, $52
-      .byte $d6, $40, $d7, $20, $e5, $06, $e6, $51, $3e, $8d
-      .byte $5e, $03, $67, $52, $77, $52, $7e, $02, $9e, $03
-      .byte $a6, $43, $a7, $23, $de, $05, $fe, $02, $1e, $83
-      .byte $33, $54, $46, $40, $47, $21, $56, $04, $5e, $02
-      .byte $83, $54, $93, $52, $96, $07, $97, $50, $be, $03
-      .byte $c7, $23, $fe, $02, $0c, $82, $43, $45, $45, $24
-      .byte $46, $24, $90, $08, $95, $51, $78, $fa, $d7, $73
-      .byte $39, $f1, $8c, $01, $a8, $52, $b8, $52, $cc, $01
-      .byte $5f, $b3, $97, $63, $9e, $00, $0e, $81, $16, $24
-      .byte $66, $04, $8e, $00, $fe, $01, $08, $d2, $0e, $06
-      .byte $6f, $47, $9e, $0f, $0e, $82, $2d, $47, $28, $7a
-      .byte $68, $7a, $a8, $7a, $ae, $01, $de, $0f, $6d, $c5
-      .byte $fd
-
-;level 4-2
-L_UndergroundArea2:
-      .byte $48, $0f
-      .byte $0e, $01, $5e, $02, $bc, $01, $fc, $01, $2c, $82
-      .byte $41, $52, $4e, $04, $67, $25, $68, $24, $69, $24
-      .byte $ba, $42, $c7, $04, $de, $0b, $b2, $87, $fe, $02
-      .byte $2c, $e1, $2c, $71, $67, $01, $77, $00, $87, $01
-      .byte $8e, $00, $ee, $01, $f6, $02, $03, $85, $05, $02
-      .byte $13, $21, $16, $02, $27, $02, $2e, $02, $88, $72
-      .byte $c7, $20, $d7, $07, $e4, $76, $07, $a0, $17, $06
-      .byte $48, $7a, $76, $20, $98, $72, $79, $e1, $88, $62
-      .byte $9c, $01, $b7, $73, $dc, $01, $f8, $62, $fe, $01
-      .byte $08, $e2, $0e, $00, $6e, $02, $73, $20, $77, $23
-      .byte $83, $04, $93, $20, $ae, $00, $fe, $0a, $0e, $82
-      .byte $39, $71, $a8, $72, $e7, $73, $0c, $81, $8f, $32
-      .byte $ae, $00, $fe, $04, $04, $d1, $17, $04, $26, $49
-      .byte $27, $29, $df, $33, $fe, $02, $44, $f6, $7c, $01
-      .byte $8e, $06, $bf, $47, $ee, $0f, $4d, $c7, $0e, $82
-      .byte $68, $7a, $ae, $01, $de, $0f, $6d, $c5
-      .byte $fd
-
-;underground bonus rooms area used in many levels
-L_UndergroundArea3:
-      .byte $48, $01
-      .byte $0e, $01, $00, $5a, $3e, $06, $45, $46, $47, $46
-      .byte $53, $44, $ae, $01, $df, $4a, $4d, $c7, $0e, $81
-      .byte $00, $5a, $2e, $04, $37, $28, $3a, $48, $46, $47
-      .byte $c7, $07, $ce, $0f, $df, $4a, $4d, $c7, $0e, $81
-      .byte $00, $5a, $33, $53, $43, $51, $46, $40, $47, $50
-      .byte $53, $04, $55, $40, $56, $50, $62, $43, $64, $40
-      .byte $65, $50, $71, $41, $73, $51, $83, $51, $94, $40
-      .byte $95, $50, $a3, $50, $a5, $40, $a6, $50, $b3, $51
-      .byte $b6, $40, $b7, $50, $c3, $53, $df, $4a, $4d, $c7
-      .byte $0e, $81, $00, $5a, $2e, $02, $36, $47, $37, $52
-      .byte $3a, $49, $47, $25, $a7, $52, $d7, $04, $df, $4a
-      .byte $4d, $c7, $0e, $81, $00, $5a, $3e, $02, $44, $51
-      .byte $53, $44, $54, $44, $55, $24, $a1, $54, $ae, $01
-      .byte $b4, $21, $df, $4a, $e5, $07, $4d, $c7
-      .byte $fd
-
-;water area used in levels 5-2 and 6-2
-L_WaterArea1:
-      .byte $41, $01
-      .byte $b4, $34, $c8, $52, $f2, $51, $47, $d3, $6c, $03
-      .byte $65, $49, $9e, $07, $be, $01, $cc, $03, $fe, $07
-      .byte $0d, $c9, $1e, $01, $6c, $01, $62, $35, $63, $53
-      .byte $8a, $41, $ac, $01, $b3, $53, $e9, $51, $26, $c3
-      .byte $27, $33, $63, $43, $64, $33, $ba, $60, $c9, $61
-      .byte $ce, $0b, $e5, $09, $ee, $0f, $7d, $ca, $7d, $47
-      .byte $fd
-
-;level 2-2/7-2
-L_WaterArea2:
-      .byte $41, $01
-      .byte $b8, $52, $ea, $41, $27, $b2, $b3, $42, $16, $d4
-      .byte $4a, $42, $a5, $51, $a7, $31, $27, $d3, $08, $e2
-      .byte $16, $64, $2c, $04, $38, $42, $76, $64, $88, $62
-      .byte $de, $07, $fe, $01, $0d, $c9, $23, $32, $31, $51
-      .byte $98, $52, $0d, $c9, $59, $42, $63, $53, $67, $31
-      .byte $14, $c2, $36, $31, $87, $53, $17, $e3, $29, $61
-      .byte $30, $62, $3c, $08, $42, $37, $59, $40, $6a, $42
-      .byte $99, $40, $c9, $61, $d7, $63, $39, $d1, $58, $52
-      .byte $c3, $67, $d3, $31, $dc, $06, $f7, $42, $fa, $42
-      .byte $23, $b1, $43, $67, $c3, $34, $c7, $34, $d1, $51
-      .byte $43, $b3, $47, $33, $9a, $30, $a9, $61, $b8, $62
-      .byte $be, $0b, $d5, $09, $de, $0f, $0d, $ca, $7d, $47
-      .byte $fd
-
-;water area used in level 8-4
-L_WaterArea3:
-      .byte $49, $0f
-      .byte $1e, $01, $39, $73, $5e, $07, $ae, $0b, $1e, $82
-      .byte $6e, $88, $9e, $02, $0d, $04, $2e, $0b, $45, $09
-      .byte $4e, $0f, $ed, $47
-      .byte $fd
-
-;-------------------------------------------------------------------------------------
-
-;unused space
-      .byte $ff
+.byte >L_7E00,>L_7E37,>L_7E41,>L_7EB8,>L_7EF8,>L_7F3A,>L_7F66,>L_7FBF,>L_7FE7,>L_8025,>L_80CD,>L_8102,>L_814F,>L_816D,>L_81A0,>L_81F6,>L_8249,>L_8369,>L_838B,>L_838B,>L_8429,>L_848A,>L_84B6,>L_84D8,>L_84EB,>L_8683,>L_86E1,>L_4C28,>L_8763,>L_CCB5,>L_87C9,>L_882B,>L_809D,>L_80EE,>L_81B5,>L_838B,>L_845E,>L_8517,>L_829F,>L_83CD,>L_84EB,>L_85B2,>L_8799,>L_8B48,>L_1D95,>L_87C9,>L_87F3,>L_8810,>L_1D1B,>L_8553,>L_85C3,>L_8604,>L_8623,>L_8646,>L_1BB5,>L_8333,>L_9D0B,>L_0B8C,>L_1B4B,>L_054C,>L_9B77,>L_0B5F,>L_1DEB,>L_8B0C,>L_507E
+
+EnemyDataAddrLow:
+.byte <E_7E31,<E_7E40,<E_7E92,<E_7EE5,<E_7F15,<E_7F5F,<E_7F95,<E_7FD8,<E_8016,<E_8078,<E_8127,<E_8147,<E_8184,<E_8191,<E_81CA,<E_8237,<E_828A,<E_8382,<E_83A2,<E_83E9,<E_8448,<E_84AD,<E_84C9,<E_84E7,<E_8506,<E_86D8,<E_872D,<E_857F,<E_8786,<E_867F,<E_88A0,<E_88A9,<E_80C3,<E_813D,<E_81E7,<E_840A,<E_8479,<E_852E,<E_831A,<E_83E0,<E_853E,<E_85BF,<E_87C2,<E_8B81,<E_8B81,<E_8878,<E_8881,<E_8889,<E_8C00,<E_85AC,<E_85F8,<E_861B,<E_8640,<E_8669,<E_83C8,<E_8362,<E_76D6,<E_DD3F,<E_BB92,<E_4C21,<E_EA96,<E_1DFB,<E_1B50,<E_CCD5,<E_007E
+
+EnemyDataAddrHigh:
+.byte >E_7E31,>E_7E40,>E_7E92,>E_7EE5,>E_7F15,>E_7F5F,>E_7F95,>E_7FD8,>E_8016,>E_8078,>E_8127,>E_8147,>E_8184,>E_8191,>E_81CA,>E_8237,>E_828A,>E_8382,>E_83A2,>E_83E9,>E_8448,>E_84AD,>E_84C9,>E_84E7,>E_8506,>E_86D8,>E_872D,>E_857F,>E_8786,>E_867F,>E_88A0,>E_88A9,>E_80C3,>E_813D,>E_81E7,>E_840A,>E_8479,>E_852E,>E_831A,>E_83E0,>E_853E,>E_85BF,>E_87C2,>E_8B81,>E_8B81,>E_8878,>E_8881,>E_8889,>E_8C00,>E_85AC,>E_85F8,>E_861B,>E_8640,>E_8669,>E_83C8,>E_8362,>E_76D6,>E_DD3F,>E_BB92,>E_4C21,>E_EA96,>E_1DFB,>E_1B50,>E_CCD5,>E_007E
+
+L_7E00:
+.byte $50,$21,$03,$E3,$13,$36,$16,$26,$16,$08,$83,$63,$0C,$83,$6C,$84,$0C,$F3,$07,$81,$45,$20,$94,$20,$B9,$02,$F4,$20,$32,$A0,$A2,$20,$F4,$0B,$0A,$F8,$2F,$55,$2E,$0F,$4E,$01,$50,$30,$0D,$C1,$4F,$26,$FD
+
+E_7E31:
+.byte $34,$83,$0E,$40,$03,$FF
+
+L_7E37:
+.byte $38,$11,$0F,$26,$AD,$40,$3D,$C7,$FD
+
+E_7E40:
+.byte $FF
+
+L_7E41:
+.byte $48,$0F,$0E,$01,$5E,$02,$F6,$02,$0C,$E9,$1E,$0E,$20,$08,$A3,$00,$4E,$8A,$6E,$00,$AE,$01,$07,$82,$2E,$0E,$72,$00,$89,$80,$0E,$80,$60,$22,$6E,$01,$08,$D2,$0E,$02,$4E,$06,$6F,$47,$9E,$0F,$0E,$90,$8C,$21,$94,$02,$A4,$02,$0E,$81,$6F,$47,$76,$0B,$72,$02,$9E,$0F,$0E,$82,$28,$7A,$68,$7A,$A8,$7A,$AE,$01,$DE,$0F,$5D,$C7,$6D,$45,$FD
+
+E_7E92:
+.byte $0C,$8D,$F3,$0A,$72,$90,$86,$A9,$87,$A5,$29,$89,$49,$09,$0E,$62,$A3,$0E,$46,$89,$0E,$46,$09,$69,$09,$00,$8D,$36,$94,$86,$1F,$B3,$1C,$C5,$95,$27,$B4,$FF
+
+L_7EB8:
+.byte $90,$11,$0F,$26,$FE,$10,$03,$CF,$8C,$17,$03,$CF,$03,$CF,$03,$CF,$03,$CF,$0E,$91,$A7,$63,$B7,$63,$C5,$65,$D5,$65,$DD,$4A,$E3,$67,$F3,$13,$8D,$C1,$AE,$42,$DF,$20,$E9,$F8,$9D,$C7,$FD
+
+E_7EE5:
+.byte $06,$A5,$75,$24,$EA,$24,$33,$A9,$AB,$26,$08,$A7,$83,$24,$88,$24,$08,$AA,$FF
+
+L_7EF8:
+.byte $44,$4F,$0E,$01,$4E,$02,$37,$80,$4C,$76,$0E,$86,$0E,$89,$0E,$8C,$0E,$F0,$3E,$0E,$5A,$78,$8E,$0C,$34,$F8,$4E,$0F,$FD
+
+E_7F15:
+.byte $0E,$C5,$80,$2C,$29,$6C,$29,$AC,$29,$2A,$A9,$7A,$29,$BA,$29,$29,$A9,$59,$29,$89,$29,$C9,$29,$43,$88,$0E,$C5,$00,$43,$88,$AE,$43,$00,$AE,$43,$80,$FF
+
+L_7F3A:
+.byte $9B,$07,$2B,$7B,$CE,$03,$DC,$51,$EE,$07,$07,$82,$13,$02,$3E,$06,$7E,$02,$AE,$07,$FE,$0A,$0D,$C4,$CD,$43,$CE,$09,$DE,$0B,$DD,$42,$FE,$02,$5D,$C7,$FD
+
+E_7F5F:
+.byte $76,$85,$78,$AD,$90,$B5,$FF
+
+L_7F66:
+.byte $50,$31,$89,$80,$94,$24,$B3,$63,$D4,$52,$88,$81,$94,$34,$97,$0A,$A6,$40,$B5,$40,$CF,$58,$87,$82,$86,$83,$87,$84,$87,$85,$87,$86,$87,$87,$87,$88,$FA,$8B,$4D,$C1,$AF,$26,$BB,$F8,$0E,$8F,$FD
+
+E_7F95:
+.byte $86,$80,$F6,$01,$86,$82,$F6,$03,$86,$84,$F6,$05,$86,$86,$F6,$07,$86,$88,$F6,$09,$86,$8A,$F6,$0B,$86,$8C,$F6,$0D,$86,$8E,$F6,$0F,$86,$90,$F6,$11,$86,$94,$0E,$A0,$20,$FF
+
+L_7FBF:
+.byte $41,$01,$0E,$86,$32,$54,$0E,$81,$5C,$03,$0C,$87,$35,$33,$0C,$82,$67,$33,$0C,$85,$1D,$C1,$5F,$26,$FD
+
+E_7FD8:
+.byte $03,$87,$03,$87,$03,$87,$03,$91,$33,$07,$77,$07,$91,$0A,$FF
+
+L_7FE7:
+.byte $91,$31,$0F,$26,$07,$F1,$F7,$73,$93,$D2,$96,$07,$98,$52,$3C,$F5,$97,$00,$F9,$0B,$0C,$8A,$7F,$27,$B8,$33,$F6,$0B,$0C,$8C,$9F,$26,$49,$82,$69,$02,$83,$05,$B7,$73,$B7,$FF,$EE,$00,$FE,$0F,$FD
+
+E_8016:
+.byte $32,$91,$0F,$06,$0E,$46,$29,$96,$0F,$96,$8F,$9E,$48,$20,$FF
+
+L_8025:
+.byte $5B,$06,$05,$32,$06,$33,$07,$34,$5E,$0A,$8E,$02,$4C,$F9,$87,$00,$86,$E4,$96,$36,$F1,$64,$81,$E5,$96,$36,$B9,$0B,$F6,$64,$6E,$8A,$7E,$0F,$8E,$06,$0E,$8B,$66,$30,$7E,$02,$8E,$0C,$0E,$8A,$1E,$05,$0E,$81,$FE,$80,$FA,$0A,$5E,$82,$7E,$06,$8E,$09,$7E,$86,$BE,$02,$DE,$06,$FE,$0A,$0D,$C4,$CD,$43,$CE,$09,$DE,$0B,$DD,$42,$FE,$02,$5D,$C7,$FD
+
+E_8078:
+.byte $89,$9F,$96,$03,$A8,$A9,$C6,$83,$99,$A8,$E1,$80,$E1,$04,$4B,$80,$AB,$39,$2B,$86,$2B,$3C,$FC,$9B,$37,$8C,$37,$8C,$2A,$9B,$78,$2D,$A6,$28,$90,$B5,$FF
+
+L_80CD:
+.byte $50,$31,$0C,$EF,$0C,$7F,$0C,$83,$4C,$73,$A3,$00,$BC,$65,$B7,$20,$DC,$02,$0C,$E5,$0C,$0A,$0E,$B0,$27,$01,$33,$70,$63,$78,$93,$70,$FD
+
+E_8127:
+.byte $44,$85,$64,$05,$94,$05,$90,$81,$F0,$83,$0B,$AE,$0E,$46,$A9,$0E,$61,$40,$0E,$62,$80,$FF
+
+L_8102:
+.byte $94,$71,$0E,$80,$6F,$54,$8F,$54,$AF,$56,$DF,$59,$FF,$58,$0C,$AA,$0F,$D9,$2C,$4A,$55,$00,$0C,$C3,$8F,$59,$AF,$59,$EF,$59,$FE,$01,$0D,$C1,$6F,$26,$FD
+
+E_8147:
+.byte $03,$94,$0F,$07,$03,$94,$FF
+
+L_814F:
+.byte $57,$89,$10,$04,$AE,$0A,$DE,$09,$0E,$8B,$0F,$50,$16,$0A,$46,$0A,$8E,$00,$86,$0A,$0E,$81,$87,$0A,$96,$02,$B2,$03,$BE,$04,$5B,$87,$AE,$87,$FE,$0A,$0D,$C4,$00,$7B,$CD,$43,$CE,$09,$DE,$0B,$DD,$42,$FE,$02,$5D,$C7,$FD
+
+E_8184:
+.byte $18,$9E,$48,$1B,$88,$1D,$89,$9D,$0E,$C0,$40,$2B,$15,$89,$8E,$B8,$0E,$20,$8C,$40,$0C,$6C,$0C,$78,$2D,$90,$B5,$FF
+
+L_816D:
+.byte $5B,$87,$AE,$87,$FE,$0A,$0D,$C4,$00,$7B,$CD,$43,$CE,$09,$DE,$0B,$DD,$42,$FE,$02,$5D,$C7,$FD
+
+E_8191:
+.byte $89,$8E,$B8,$0E,$20,$8C,$40,$0C,$6C,$0C,$78,$2D,$90,$B5,$FF
+
+L_81A0:
+.byte $53,$31,$08,$F2,$24,$28,$68,$28,$D6,$78,$98,$C2,$98,$C3,$E8,$FA,$18,$FA,$2E,$30,$FD
+
+E_81CA:
+.byte $0E,$61,$60,$73,$B9,$72,$0A,$88,$BE,$DB,$02,$0D,$A8,$5B,$3A,$7D,$28,$7B,$3C,$9B,$39,$0E,$62,$60,$2B,$B9,$8B,$3C,$FF
+
+L_81F6:
+.byte $C6,$01,$FE,$0A,$00,$E9,$15,$3C,$2E,$06,$32,$05,$42,$2A,$DE,$01,$F0,$63,$2E,$81,$1E,$80,$3A,$30,$5B,$30,$57,$02,$79,$30,$C7,$31,$C4,$02,$14,$B0,$23,$30,$4C,$16,$44,$B0,$69,$31,$86,$37,$14,$B0,$3B,$30,$34,$30,$47,$02,$62,$30,$81,$30,$1D,$C1,$1E,$01,$5F,$26,$FD
+
+E_8237:
+.byte $3D,$A8,$3E,$77,$60,$E0,$00,$C7,$86,$C7,$83,$45,$A4,$A9,$24,$07,$A8,$FF
+
+L_8249:
+.byte $D0,$11,$0E,$90,$8B,$11,$99,$0B,$F6,$02,$04,$80,$3B,$12,$9C,$17,$87,$94,$2B,$B1,$77,$15,$37,$83,$9B,$13,$07,$93,$2B,$15,$87,$02,$08,$F3,$C7,$13,$C6,$43,$E3,$02,$F3,$02,$43,$B0,$5A,$72,$65,$46,$83,$31,$B7,$73,$03,$91,$17,$11,$83,$30,$2D,$C1,$2E,$01,$8F,$26,$FD
+
+E_828A:
+.byte $E5,$A9,$44,$A9,$83,$24,$F9,$24,$55,$A8,$55,$8F,$5D,$A8,$29,$97,$79,$29,$47,$A9,$FF
+
+L_8369:
+.byte $52,$B1,$0F,$20,$6E,$45,$07,$91,$09,$11,$38,$00,$58,$11,$5A,$10,$96,$14,$E7,$7B,$07,$FB,$1E,$00,$FD
+
+E_8382:
+.byte $0F,$02,$0E,$A7,$A0,$EE,$4B,$80,$FF
+
+L_838B:
+.byte $56,$31,$0F,$B3,$47,$7C,$62,$02,$6C,$59,$0C,$D5,$6A,$30,$88,$03,$E8,$79,$18,$F9,$2E,$00,$FD
+
+E_83A2:
+.byte $0F,$81,$0E,$53,$E0,$0E,$51,$80,$0F,$02,$27,$08,$37,$08,$47,$08,$57,$08,$68,$08,$77,$08,$88,$08,$0E,$67,$80,$0E,$60,$A0,$0E,$58,$E0,$DE,$A1,$80,$DE,$51,$A0,$DE,$68,$E0,$FF
+
+E_83E9:
+.byte $0E,$C5,$C0,$0E,$52,$80,$0F,$02,$07,$0F,$27,$0F,$47,$0F,$5E,$63,$80,$5E,$4B,$A0,$5E,$52,$E0,$DE,$82,$80,$DE,$67,$A0,$DE,$63,$E0,$FF
+
+L_8429:
+.byte $C0,$01,$CF,$33,$07,$B0,$17,$7C,$2E,$00,$5F,$01,$9F,$01,$DF,$52,$1F,$81,$5F,$01,$9F,$01,$CE,$01,$E8,$7A,$18,$FA,$3E,$0F,$FD
+
+E_8448:
+.byte $0F,$81,$0E,$51,$80,$40,$2B,$80,$2B,$00,$AB,$40,$2B,$80,$2B,$0E,$E4,$80,$0E,$D4,$80,$FF
+
+L_848A:
+.byte $46,$31,$07,$3F,$73,$00,$94,$02,$A2,$02,$C3,$02,$E4,$30,$07,$BF,$24,$70,$50,$64,$7A,$78,$84,$01,$B4,$02,$07,$B1,$04,$70,$0A,$F8,$2E,$00,$FD
+
+E_84AD:
+.byte $0E,$80,$A4,$0F,$03,$0E,$95,$A0,$FF
+
+L_84B6:
+.byte $D0,$02,$7F,$35,$CE,$0C,$3F,$D0,$3E,$0F,$FE,$81,$0A,$F8,$4A,$78,$5E,$00,$FD
+
+E_84C9:
+.byte $50,$85,$90,$05,$00,$85,$0E,$52,$A0,$0F,$83,$0E,$53,$A0,$FF
+
+L_84D8:
+.byte $D0,$12,$F9,$0B,$FE,$00,$D9,$8B,$03,$9A,$41,$78,$81,$79,$FD
+
+E_84E7:
+.byte $0E,$E3,$A0,$FF
+
+L_84EB:
+.byte $D6,$31,$7F,$35,$CE,$0C,$04,$F8,$7E,$09,$A1,$63,$CE,$0C,$04,$F8,$7E,$09,$A1,$63,$CE,$0C,$04,$F8,$3E,$0F,$FD
+
+E_8506:
+.byte $0E,$E4,$A0,$A6,$1B,$0E,$E8,$A0,$A6,$1E,$0E,$E5,$A0,$0E,$AA,$E0,$FF
+
+L_8683:
+.byte $56,$B1,$19,$80,$1C,$00,$F4,$86,$F6,$51,$F9,$51,$0E,$B0,$1D,$44,$35,$B2,$96,$15,$B3,$10,$B4,$17,$D2,$19,$03,$98,$4E,$31,$50,$0D,$8C,$F6,$5C,$F3,$78,$90,$98,$10,$B8,$10,$D8,$10,$5C,$F4,$68,$47,$A7,$00,$B7,$00,$CC,$73,$03,$E3,$07,$03,$8F,$A6,$7A,$90,$9A,$10,$BA,$10,$CA,$02,$DA,$10,$EC,$00,$0C,$86,$37,$14,$85,$10,$B2,$10,$6D,$C1,$AF,$26,$FD
+
+E_86D8:
+.byte $19,$83,$58,$95,$78,$AD,$F5,$97,$FF
+
+L_86E1:
+.byte $D5,$20,$0F,$26,$83,$53,$A7,$53,$53,$F8,$56,$78,$59,$78,$0D,$C4,$50,$53,$69,$51,$D3,$42,$42,$D9,$55,$41,$70,$59,$91,$45,$01,$AF,$00,$20,$3F,$58,$4F,$57,$5F,$59,$6F,$57,$8F,$58,$9F,$56,$BF,$57,$CF,$58,$EF,$53,$5F,$A6,$E5,$0B,$EB,$78,$0E,$8F,$FE,$21,$0C,$8F,$5C,$83,$6C,$83,$1C,$81,$3C,$01,$50,$0C,$6E,$0F,$33,$87,$58,$AD,$03,$87,$47,$2C,$73,$0A,$97,$0B,$B9,$0A,$F3,$0B,$03,$87,$47,$2C,$70,$2C,$73,$0A,$80,$2C,$97,$0B,$B9,$0A,$F3,$0B,$33,$87,$05,$87,$55,$87,$55,$87,$55,$87,$00,$87,$50,$0A,$63,$0B,$70,$0A,$FE,$71,$EA,$FF,$C6,$81,$4E,$32,$77,$00,$8E,$33,$9E,$34,$FE,$35,$08,$A9,$09,$29,$B8,$23,$B9,$23,$EE,$34,$13,$83,$3A,$10,$CB,$78,$0E,$8F,$E0,$F8,$0E,$80,$FD
+
+E_872D:
+.byte $33,$87,$58,$AD,$03,$87,$47,$2C,$73,$0A,$97,$0B,$B9,$0A,$F3,$0B,$03,$87,$47,$2C,$70,$2C,$73,$0A,$80,$2C,$97,$0B,$B9,$0A,$F3,$0B,$33,$87,$05,$87,$55,$87,$55,$87,$55,$87,$00,$87,$50,$0A,$63,$0B,$70,$0A,$FE,$71,$EA,$FF
+
+L_4C28:
+.byte $60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60,$60
+
+E_857F:
+.byte $27,$26,$D8,$72,$89,$91,$D8,$72,$F3,$03,$39,$F1,$A9,$11,$09,$F1,$63,$24,$67,$24,$D8,$62,$28,$91,$2A,$10,$56,$21,$70,$04,$79,$0B,$8C,$00,$94,$21,$9F,$35,$2F,$B8,$3D,$C1,$7F,$26,$FD,$92,$91,$0E,$71,$C3,$FF
+
+L_8763:
+.byte $C6,$81,$4E,$32,$77,$00,$8E,$33,$9E,$34,$FE,$35,$08,$A9,$09,$29,$B8,$23,$B9,$23,$EE,$34,$13,$83,$3A,$10,$CB,$78,$0E,$8F,$E0,$F8,$0E,$80,$FD
+
+E_8786:
+.byte $FB,$88,$FB,$88,$2B,$88,$6E,$52,$E0,$AE,$53,$E0,$BE,$63,$E0,$CE,$9C,$E0,$FF
+
+L_CCB5:
+.byte $65,$00,$69,$06,$99,$0F,$02,$AD,$D4,$03,$20,$4A,$CC,$AD,$D4,$03,$0A,$90,$05,$A9,$F8,$20,$C5,$C5,$A5,$00,$10,$10,$B9,$03,$02,$D9,$07,$02,$90,$08,$A9,$F8,$99,$04,$02,$99,$0C,$02,$60,$BC,$F1,$06,$AD,$BA,$03,$99,$00,$02,$AD,$AF,$03,$99,$03,$02,$A5,$09,$4A,$4A,$48,$29,$01,$49,$64,$99,$01,$02,$68,$4A,$4A,$A9,$02,$90,$02,$09,$C0,$99,$02,$02,$60,$68,$67,$66,$BC,$EC,$06,$B5,$24,$F6,$24,$4A,$29,$07,$C9,$03,$B0,$4A,$AA,$BD,$0A,$CD,$C8,$20,$BF,$C5,$88,$A6,$08,$AD,$BA,$03,$38,$E9,$04,$99,$00,$02,$99,$08,$02,$18,$69,$08,$99,$04,$02,$99,$0C,$02,$AD,$AF,$03,$38,$E9,$04,$99,$03,$02,$99,$07,$02,$18,$69,$08,$99,$0B,$02,$99,$0F,$02,$A9,$02,$99,$02,$02,$A9,$82,$99,$06,$02,$A9,$42,$99,$0A,$02,$A9,$C2,$99,$0E,$02,$60,$A9,$00,$95,$24,$60,$BC,$E5,$06,$A9,$5B,$C8,$20,$B9,$C5,$C8,$A9,$02,$20,$B9,$C5,$88,$88,$AD,$AE,$03,$99,$03,$02,$99,$0F,$02,$18,$69,$08,$99,$07,$02,$99,$13,$02,$18,$69,$08,$99,$0B,$02,$99,$17,$02,$B5,$CF,$AA,$48,$E0,$20,$B0,$02,$A9,$F8,$20,$C2,$C5,$68,$18,$69,$80,$AA,$E0,$20,$B0,$02,$A9,$F8,$99,$0C,$02,$99,$10,$02,$99,$14,$02,$AD,$D1,$03,$48,$29,$08,$F0,$08,$A9,$F8,$99,$00,$02,$99,$0C,$02,$68,$48,$29,$04,$F0,$08,$A9,$F8,$99,$04,$02,$99,$10,$02,$68,$29,$02,$F0,$08,$A9,$F8,$99,$08,$02,$99,$14,$02
+
+E_867F:
+.byte $00,$86,$29,$FF
+
+L_87C9:
+.byte $9B,$86,$05,$32,$06,$33,$07,$34,$5E,$0A,$AE,$02,$D7,$00,$39,$B1,$41,$69,$54,$78,$57,$31,$6E,$01,$9E,$0A,$FE,$00,$01,$B4,$63,$18,$84,$17,$A5,$16,$C6,$15,$E7,$14,$29,$F9,$5B,$81,$8F,$B7,$FE,$0C,$FE,$80,$05,$E6,$15,$73,$36,$73,$58,$73,$7A,$78,$99,$73,$B7,$73,$D5,$73,$F0,$6A,$7D,$C7,$FD
+
+E_88A0:
+.byte $0E,$ED,$E1,$08,$97,$0E,$DF,$E0,$FF
+
+L_882B:
+.byte $DB,$82,$23,$31,$27,$30,$2A,$78,$36,$30,$44,$61,$56,$30,$67,$30,$83,$64,$A3,$64,$B6,$30,$C4,$33,$D7,$30,$E3,$63,$37,$82,$41,$13,$45,$13,$49,$12,$57,$14,$6E,$0A,$9F,$54,$BF,$53,$FF,$58,$1F,$D3,$3E,$02,$4E,$8A,$9E,$07,$C8,$78,$D3,$02,$D4,$02,$FE,$0A,$0D,$C4,$CD,$43,$CE,$09,$DE,$0B,$DD,$42,$FE,$02,$5D,$C7,$FD
+
+E_88A9:
+.byte $0E,$DE,$E0,$00,$95,$E0,$0C,$0E,$DF,$E0,$5B,$95,$78,$2D,$90,$B5,$FF
+
+L_809D:
+.byte $48,$01,$00,$5A,$08,$07,$1F,$59,$23,$20,$2E,$05,$3E,$02,$48,$30,$59,$34,$6E,$0A,$65,$07,$7E,$02,$74,$00,$83,$01,$94,$03,$AE,$0F,$BE,$01,$DF,$4A,$4D,$C7,$0E,$46,$29,$0E,$53,$80,$0E,$80,$A0,$FF,$50,$31,$0C,$EF,$0C,$7F,$0C,$83,$4C,$73,$A3,$00,$BC,$65,$B7,$20,$DC,$02,$0C,$E5,$0C,$0A,$0E,$B0,$27,$01,$33,$70,$63,$78,$93,$70,$FD
+
+E_80C3:
+.byte $0E,$46,$29,$0E,$53,$80,$0E,$80,$A0,$FF
+
+L_80EE:
+.byte $50,$31,$2A,$79,$5F,$B8,$0C,$85,$6F,$59,$87,$20,$8C,$07,$8D,$C1,$CF,$26,$0E,$81,$94,$71,$0E,$80,$6F,$54,$8F,$54,$AF,$56,$DF,$59,$FF,$58,$0C,$AA,$0F,$D9,$2C,$4A,$55,$00,$0C,$C3,$8F,$59,$AF,$59,$EF,$59,$FE,$01,$0D,$C1,$6F,$26,$FD
+
+E_813D:
+.byte $80,$86,$63,$8F,$73,$0F,$07,$AB,$0F,$0B,$03,$94,$0F,$07,$03,$94,$FF
+
+L_81B5:
+.byte $53,$31,$F9,$0B,$02,$85,$10,$03,$77,$A5,$0F,$B8,$25,$02,$52,$02,$1D,$C1,$5F,$26,$FD
+
+E_81E7:
+.byte $8B,$BC,$8D,$A8,$88,$05,$AB,$05,$70,$86,$80,$06,$A0,$07,$FF
+
+E_840A:
+.byte $0F,$81,$0E,$51,$80,$0E,$50,$A0,$0E,$53,$E0,$ED,$28,$EF,$82,$0E,$53,$A0,$0E,$C3,$C0,$0E,$65,$E0,$DE,$D2,$A0,$DE,$63,$E0,$FF
+
+L_845E:
+.byte $D6,$31,$7F,$35,$CE,$0C,$04,$F8,$7E,$09,$A4,$0A,$CE,$0C,$04,$F8,$7E,$09,$A4,$0A,$CE,$0C,$04,$F8,$2E,$0F,$FD
+
+E_8479:
+.byte $0E,$94,$80,$A6,$1B,$3E,$C7,$80,$3E,$68,$A0,$A6,$1B,$3E,$C5,$80,$FF
+
+L_8517:
+.byte $D6,$31,$7F,$35,$CE,$0C,$04,$F8,$3E,$01,$95,$0A,$C7,$0A,$DB,$78,$EE,$0C,$84,$F8,$9E,$0F,$FD
+
+E_852E:
+.byte $0E,$D8,$A0,$97,$1F,$C9,$1B,$0F,$82,$1E,$C9,$A0,$1E,$6A,$E0,$FF
+
+L_829F:
+.byte $5B,$07,$05,$32,$06,$33,$07,$34,$5E,$0A,$68,$64,$98,$64,$A8,$64,$CE,$06,$FE,$02,$0D,$01,$1E,$0E,$7E,$02,$B4,$63,$F4,$63,$14,$E3,$2E,$0E,$5E,$02,$64,$35,$88,$72,$BE,$0E,$0D,$04,$AE,$02,$CE,$08,$CD,$4B,$FE,$02,$0D,$05,$68,$31,$7E,$0A,$96,$31,$A9,$63,$A8,$33,$D5,$30,$EE,$02,$E6,$62,$F4,$61,$04,$B1,$08,$3F,$44,$33,$94,$63,$A4,$31,$E4,$31,$04,$BF,$08,$3F,$04,$BF,$08,$3F,$CD,$4B,$03,$E4,$0E,$03,$2E,$01,$7E,$06,$BE,$02,$DE,$06,$FE,$0A,$0D,$C4,$CD,$43,$CE,$09,$DE,$0B,$DD,$42,$FE,$02,$5D,$C7,$FD
+
+E_831A:
+.byte $7F,$03,$56,$1B,$C9,$1B,$0F,$07,$36,$1B,$AA,$1B,$48,$95,$0F,$0A,$2A,$1B,$5B,$0C,$78,$2D,$90,$B5,$FF
+
+L_83CD:
+.byte $C8,$01,$00,$5A,$37,$00,$4C,$80,$53,$02,$67,$02,$80,$6A,$DF,$4A,$7D,$C7,$FD
+
+E_83E0:
+.byte $0E,$91,$80,$1E,$4A,$A0,$4A,$2E,$FF
+
+E_853E:
+.byte $0E,$E4,$A0,$A6,$1B,$B3,$06,$0E,$D8,$A0,$A6,$1E,$B3,$0E,$0E,$E5,$A0,$0E,$AA,$E0,$FF
+
+L_85B2:
+.byte $48,$01,$00,$5A,$26,$49,$49,$49,$DF,$4A,$4D,$C7,$FE,$0E,$4A,$C3,$FF,$57,$31,$0F,$26,$3E,$30,$5C,$49,$FA,$51,$0C,$DE,$3C,$36,$9C,$26,$FA,$51,$0E,$80,$0B,$32,$2A,$60,$4A,$61,$45,$36,$61,$26,$6A,$61,$71,$04,$8A,$61,$9A,$02,$AA,$61,$CA,$32,$E1,$03,$F9,$0B,$2A,$8A,$69,$7B,$0D,$C7,$FD
+
+E_85BF:
+.byte $0E,$4A,$C3,$FF
+
+L_8799:
+.byte $C6,$81,$29,$70,$A6,$00,$0E,$86,$08,$20,$09,$20,$13,$03,$2E,$08,$77,$0A,$B7,$0A,$FE,$00,$26,$B1,$54,$30,$72,$30,$93,$30,$2D,$C1,$2E,$01,$6F,$26,$EA,$F8,$FE,$00,$FD
+
+E_87C2:
+.byte $78,$AD,$79,$1B,$B9,$1E,$FF
+
+L_8B48:
+E_8B81:
+L_1D95:
+E_8878:
+.byte $0E,$ED,$E1,$08,$97,$0E,$EE,$E1,$FF
+
+L_87F3:
+.byte $5B,$81,$8F,$B7,$FE,$0C,$FE,$80,$05,$E6,$15,$73,$36,$73,$58,$73,$7A,$78,$99,$73,$B7,$73,$D5,$73,$F0,$6A,$7D,$C7,$FD
+
+E_8881:
+.byte $0E,$EF,$E0,$53,$8B,$73,$11,$FF
+
+L_8810:
+.byte $5B,$B0,$48,$31,$87,$14,$A6,$15,$C4,$15,$22,$83,$D4,$0A,$D7,$61,$87,$E1,$A7,$61,$34,$F8,$D9,$78,$7D,$C7,$FD
+
+E_8889:
+.byte $0E,$DF,$E0,$17,$24,$17,$24,$7B,$2A,$D6,$1B,$33,$8C,$73,$0C,$F3,$0F,$13,$8F,$0E,$EF,$E0,$FF
+
+L_1D1B:
+E_8C00:
+L_8553:
+.byte $52,$B1,$0F,$20,$6E,$45,$39,$91,$B3,$21,$C8,$12,$CA,$10,$D3,$04,$49,$91,$7C,$73,$E8,$12,$88,$91,$8A,$10,$E7,$21,$05,$91,$07,$30,$17,$07,$27,$20,$49,$11,$9C,$01,$C8,$7A,$23,$A6,$27,$26,$D8,$72,$89,$91,$D8,$72,$F3,$03,$39,$F1,$A9,$11,$09,$F1,$63,$24,$67,$24,$D8,$62,$28,$91,$2A,$10,$56,$21,$70,$04,$79,$0B,$8C,$00,$94,$21,$9F,$35,$2F,$B8,$3D,$C1,$7F,$26,$FD
+
+E_85AC:
+.byte $92,$91,$0E,$71,$C3,$FF
+
+L_85C3:
+.byte $57,$31,$0F,$26,$3E,$30,$5C,$49,$FA,$51,$0C,$DE,$3C,$36,$9C,$26,$FA,$51,$0E,$80,$0B,$32,$2A,$60,$4A,$61,$45,$36,$61,$26,$6A,$61,$71,$04,$8A,$61,$9A,$02,$AA,$61,$CA,$32,$E1,$03,$F9,$0B,$2A,$8A,$69,$7B,$0D,$C7,$FD
+
+E_85F8:
+.byte $55,$8C,$47,$9B,$77,$1D,$A7,$1B,$BE,$71,$CA,$FF
+
+L_8604:
+.byte $C7,$01,$00,$5A,$3F,$32,$5E,$06,$2E,$8A,$38,$02,$3E,$06,$A2,$65,$AE,$02,$DF,$4A,$6D,$C7,$FD
+
+E_861B:
+.byte $03,$86,$0E,$71,$CA,$3A,$0F,$FF
+
+L_8623:
+.byte $C6,$11,$AE,$12,$15,$80,$31,$64,$45,$36,$55,$06,$57,$00,$A5,$01,$A8,$00,$B5,$52,$B8,$01,$C9,$79,$EE,$0F,$6D,$C7,$FD
+
+E_8640:
+.byte $0E,$F5,$C0,$17,$1B,$FF
+
+L_8646:
+.byte $C6,$01,$8E,$0B,$8E,$89,$9E,$0A,$D5,$32,$29,$B2,$AE,$02,$BE,$05,$8E,$82,$A6,$0A,$BE,$0C,$6E,$8A,$AE,$05,$EB,$78,$FE,$0F,$E0,$FB,$0E,$80,$FD
+
+E_8669:
+.byte $09,$9B,$59,$3A,$E7,$1F,$4B,$9D,$55,$0C,$7B,$29,$A8,$9D,$0E,$D3,$C0,$14,$02,$24,$01,$34,$00,$86,$29,$FF
+
+L_1BB5:
+E_83C8:
+.byte $A0,$DE,$68,$E0,$FF
+
+L_8333:
+.byte $10,$51,$4C,$00,$8C,$07,$C7,$12,$C6,$42,$03,$92,$0C,$0F,$02,$42,$39,$12,$62,$42,$69,$14,$A5,$12,$A4,$42,$F8,$16,$0C,$85,$8F,$38,$02,$BB,$28,$7A,$68,$7A,$A8,$7A,$E0,$6A,$F0,$6A,$6D,$C5,$FD
+
+E_8362:
+.byte $37,$83,$77,$83,$A7,$85,$FF
+
+L_9D0B:
+.byte $02,$9D,$E4,$03,$A8,$A5,$06,$9D,$E6,$03,$B1,$06,$20,$FE,$9D,$85,$00,$AC,$54,$07,$D0,$01,$98,$90,$25,$A0,$11,$94,$26,$A9,$C4,$A4,$00,$C0,$58,$F0,$04,$C0,$5D,$D0,$15,$AD,$BC,$06,$D0,$08,$A9,$0B,$8D,$9D,$07,$EE,$BC,$06,$AD,$9D,$07,$D0,$02,$A0,$C4,$98,$9D,$E8,$03,$20,$8C,$9D,$A4,$02,$A9,$23,$91,$06,$A9,$10,$8D,$84,$07,$68,$85,$05,$A0,$00,$AD,$14,$07,$D0,$05,$AD,$54,$07,$F0,$01,$C8,$A5,$CE,$18,$79,$F3,$9C,$29,$F0,$95,$D7,$B4,$26,$C0,$11,$F0,$06,$20,$0A,$9E,$4C,$83,$9D,$20,$A3,$9D,$AD,$EE,$03,$49,$01,$8D,$EE,$03,$60,$A5,$86,$18,$69,$08,$29,$F0,$95,$8F,$A5,$6D,$69,$00,$95,$76,$9D,$EA,$03,$A5,$B5,$95,$BE,$60,$20,$27,$9E,$A9,$02,$85,$FF,$A9,$00,$95,$60,$9D,$3C,$04,$85,$9F,$A9,$FE,$95,$A8,$A5,$05,$20,$FE,$9D,$90,$31,$98,$C9,$09,$90,$02,$E9,$05,$20,$0A,$6E,$DA,$9D,$40,$9B,$40,$9B,$E0,$9D,$DA,$9D,$E7,$9D,$DD,$9D,$40,$9B,$E0,$9D,$A9,$00,$2C,$A9,$02,$2C,$A9,$03,$85,$39,$4C,$51,$9C,$A2,$05,$AC,$EE,$03,$20,$26,$99,$60,$C1,$C0,$5F,$60,$55,$56,$57,$58,$59,$5A,$5B,$5C,$5D,$5E,$A0,$0D,$D9,$F0,$9D,$F0,$04,$88,$10,$F8,$18,$60,$20,$27,$9E,$A9,$01,$9D,$EC,$03,$85,$FD
+
+E_76D6:
+L_0B8C:
+E_DD3F:
+L_1B4B:
+E_BB92:
+L_054C:
+E_4C21:
+L_9B77:
+E_EA96:
+L_0B5F:
+E_1DFB:
+L_1DEB:
+E_1B50:
+L_8B0C:
+E_CCD5:
+L_507E:
+E_007E:
+
+
+
 
 ;-------------------------------------------------------------------------------------
 
 ;indirect jump routine called when
 ;$0770 is set to 1
+.res $AEDC - *, $00
 GameMode:
       lda OperMode_Task
       jsr JumpEngine
